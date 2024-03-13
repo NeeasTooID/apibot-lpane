@@ -1,36 +1,31 @@
-const fs = require('fs');
-const Discord = require('discord.js');
-const client = new Discord.Client();
-const { prefix, token } = require('./config.json');
+const { Client, GatewayIntentBits } = require('discord.js');
+const config = require('./config.json');
 
-client.commands = new Discord.Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const client = new Client({ intents: ['GUILDS', 'GUILD_MESSAGES'] });
 
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  client.commands.set(command.name, command);
-}
-
+// Ketika bot siap
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+  console.log('Bot siap!');
+
+  // Set status bot
+  client.user.setActivity('Menunggu perintah...', { type: 'PLAYING' });
 });
 
+// Memuat semua command dari folder commands
+const commands = require('./commands');  // Assuming the folder is in the same directory as index.js
+
+// Ketika menerima pesan
 client.on('message', message => {
-  if (!message.content.startsWith(prefix) || message.author.bot) return;
+  // Periksa isi pesan
+  if (message.content.startsWith('!')) {
+    const commandName = message.content.slice(1).split(' ')[0];
+    const command = commands[commandName];
 
-  const args = message.content.slice(prefix.length).trim().split(/ +/);
-  const commandName = args.shift().toLowerCase();
-
-  if (!client.commands.has(commandName)) return;
-
-  const command = client.commands.get(commandName);
-
-  try {
-    command.execute(message, args);
-  } catch (error) {
-    console.error(error);
-    message.reply('Terjadi kesalahan saat menjalankan perintah!');
+    if (command) {
+      command.execute(message, client);
+    }
   }
 });
 
-client.login(token);
+// Login ke Discord dengan token bot
+client.login(config.token);
