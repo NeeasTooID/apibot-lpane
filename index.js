@@ -20,7 +20,7 @@ client.on('ready', () => {
   console.log('Bot siap!');
 
   // Set status bot
-  client.user.setActivity('Menunggu perintah...', { type: 'PLAYING' });
+  client.user.setActivity('ngetst', { type: 'PLAYING' });
 });
 
 // Ketika menerima pesan
