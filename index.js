@@ -1,7 +1,19 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const config = require('./config.json');
+const fs = require('fs'); // Require the fs module
 
 const client = new Client({ intents: ['GUILDS', 'GUILD_MESSAGES'] });
+
+// List to store commands
+const commands = [];
+
+// Load all commands from the commands folder
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  commands.push(command);
+}
 
 // Ketika bot siap
 client.on('ready', () => {
@@ -11,15 +23,12 @@ client.on('ready', () => {
   client.user.setActivity('Menunggu perintah...', { type: 'PLAYING' });
 });
 
-// Memuat semua command dari folder commands
-const commands = require('./commands');  // Assuming the folder is in the same directory as index.js
-
 // Ketika menerima pesan
 client.on('message', message => {
-  // Periksa isi pesan
+  // Periksa apakah pesan dimulai dengan '!'
   if (message.content.startsWith('!')) {
     const commandName = message.content.slice(1).split(' ')[0];
-    const command = commands[commandName];
+    const command = commands.find(cmd => cmd.name === commandName);
 
     if (command) {
       command.execute(message, client);
